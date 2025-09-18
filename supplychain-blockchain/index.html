@@ -1,0 +1,290 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>SupplyChain DApp — Round1</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin:auto; }
+    input, select { padding:8px; margin:6px 0; width:100%; box-sizing:border-box }
+    button { padding:10px 16px; margin:6px 0; }
+    pre { background:#f5f5f5; padding:10px; }
+  </style>
+</head>
+<body>
+  <h1>SupplyChain DApp (Round 1)</h1>
+  <button id="connectBtn">Connect Wallet</button>
+  <div id="account" style="margin:8px 0;color:#333"></div>
+
+  <label>Role:
+    <select id="role">
+      <option>Farmer</option>
+      <option>Distributor</option>
+      <option>Retailer</option>
+      <option>Consumer</option>
+    </select>
+  </label>
+
+  <h3>Batch Actions</h3>
+  <input id="batchID" placeholder="Batch ID (e.g. BATCH1001)" />
+  <input id="produce" placeholder="Produce name (e.g. Tomatoes)" />
+  <input id="origin" placeholder="Origin (farm / location)" />
+  <button id="createBtn">Create Batch (Farmer)</button>
+
+  <hr>
+
+  <input id="newOwner" placeholder="New owner address (for transfer)" />
+  <button id="transferBtn">Transfer Batch</button>
+
+  <hr>
+
+  <button id="historyBtn">Get Batch History (Consumer)</button>
+  <pre id="output">Output will appear here</pre>
+
+  <h4>QR (Batch ID)</h4>
+  <img id="qr" alt="QR code" style="width:140px;height:140px;border:1px solid #ddd"/>
+
+  <!-- Ethers v5 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <!-- QR generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <script>
+  // ====== PASTE YOUR CONTRACT INFO HERE ======
+  const CONTRACT_ADDRESS = 0xff5075de09b4ea6ee156e0cbfb6fe88cecc46594;
+  const CONTRACT_ABI =[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "batchID",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "produceName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "origin",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "BatchCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "batchID",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "BatchTransferred",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "batchID",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "produceName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "origin",
+				"type": "string"
+			}
+		],
+		"name": "createBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "batchID",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "batchID",
+				"type": "string"
+			}
+		],
+		"name": "getHistory",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+  // ===========================================
+
+  let provider, signer, contract, account;
+
+  async function connectWallet() {
+    if (!window.ethereum) return alert("Please install MetaMask first: https://metamask.io");
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
+    account = await signer.getAddress();
+    document.getElementById("account").innerText = "Connected: " + account;
+    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+  }
+
+  document.getElementById("connectBtn").onclick = connectWallet;
+
+  document.getElementById("createBtn").onclick = async () => {
+    if (!contract) return alert("Connect wallet first");
+    const id = document.getElementById("batchID").value.trim();
+    const produce = document.getElementById("produce").value.trim();
+    const origin = document.getElementById("origin").value.trim() || "Unknown";
+    if (!id || !produce) return alert("Enter Batch ID and Produce name");
+    try {
+      const tx = await contract.createBatch(id, produce, origin);
+      await tx.wait();
+      alert("Batch created on-chain!");
+      await showHistoryAndQR(id);
+    } catch (err) {
+      console.error(err);
+      alert(err?.error?.message || err.message);
+    }
+  };
+
+  document.getElementById("transferBtn").onclick = async () => {
+    if (!contract) return alert("Connect wallet first");
+    const id = document.getElementById("batchID").value.trim();
+    const newOwner = document.getElementById("newOwner").value.trim();
+    if (!id || !newOwner) return alert("Enter Batch ID and new owner address");
+    try {
+      const tx = await contract.transferBatch(id, newOwner);
+      await tx.wait();
+      alert("Transfer successful");
+      await showHistoryAndQR(id);
+    } catch (err) {
+      console.error(err);
+      alert(err?.error?.message || err.message);
+    }
+  };
+
+  document.getElementById("historyBtn").onclick = async () => {
+    const id = document.getElementById("batchID").value.trim();
+    if (!id) return alert("Enter Batch ID");
+    await showHistoryAndQR(id);
+  };
+
+  async function showHistoryAndQR(id) {
+    try {
+      const data = await contract.getHistory(id);
+      // data: [produceName, origin, currentOwner, previousOwners[], timestamps[]]
+      const produce = data[0];
+      const origin = data[1];
+      const currentOwner = data[2];
+      const prevOwners = data[3] || [];
+      const timestamps = data[4] || [];
+      const readableTimes = timestamps.map(t => {
+        try { return new Date(t.toNumber()*1000).toLocaleString(); } catch(e){ return String(t); }
+      });
+
+      const out = {
+        batchID: id,
+        produce,
+        origin,
+        currentOwner,
+        previousOwners: prevOwners,
+        timestamps: readableTimes
+      };
+
+      document.getElementById("output").innerText = JSON.stringify(out, null, 2);
+      QRCode.toDataURL(id).then(url => document.getElementById("qr").src = url);
+    } catch (err) {
+      console.error(err);
+      alert(err?.error?.message || err.message);
+    }
+  }
+  </script>
+</body>
+</html>
