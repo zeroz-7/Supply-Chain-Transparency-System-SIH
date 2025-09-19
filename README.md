@@ -3,7 +3,7 @@ This is a repository chronicling all work on the Blockchain-based Supply Chain T
 
 Remix - https://remix.ethereum.org/#lang=en&optimize=false&runs=200&evmVersion=null
 
-MetaMask - https://metamask.io/en-GB
+MetaMask - https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en
 
 Ethereum Sepolia Faucet - https://cloud.google.com/application/web3/faucet/ethereum/sepolia
 
