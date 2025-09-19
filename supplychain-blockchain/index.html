@@ -12,8 +12,8 @@
 </head>
 <body>
   <h1>SupplyChain DApp (Round 1)</h1>
-  <button id="connectBtn">Connect Wallet</button>
-  <div id="account" style="margin:8px 0;color:#333"></div>
+  <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+	<div id="account" style="margin:8px 0; color:#333;"></div>
 
   <label>Role:
     <select id="role">
@@ -51,7 +51,7 @@
 
   <script>
   // ====== PASTE YOUR CONTRACT INFO HERE ======
-  const CONTRACT_ADDRESS = 0xff5075de09b4ea6ee156e0cbfb6fe88cecc46594;
+  const CONTRACT_ADDRESS = "0xff5075de09b4ea6ee156e0cbfb6fe88cecc46594";
   const CONTRACT_ABI =[
 	{
 		"anonymous": false,
@@ -240,7 +240,11 @@
     const id = document.getElementById("batchID").value.trim();
     const newOwner = document.getElementById("newOwner").value.trim();
     if (!id || !newOwner) return alert("Enter Batch ID and new owner address");
-    try {
+    
+	if (!ethers.utils.isAddress(newOwner)) {
+    return alert("Please enter a valid Ethereum address (starts with 0x...)");
+	}
+	try {
       const tx = await contract.transferBatch(id, newOwner);
       await tx.wait();
       alert("Transfer successful");
