@@ -534,7 +534,7 @@ async function checkDisplayProduce(p) {
     html += `
       <div style="margin-left: 15px; margin-bottom: 10px;">
         <p style="font-size:20px;"><strong>Agent ${idx + 1}:</strong> ${agentName}</p>
-        <p><strong>Bought at:</strong> ₹${bnToNumber(agentData[1])}</p>
+        <p><strong>Bought at:</strong> ₹${bnToNumber(agentData[1])}/kg</p>
         <p><strong>Date:</strong> ${agentData[2]}</p>
       </div>
     `;
@@ -574,7 +574,7 @@ async function agentDisplayProduce(p) {
     html += `
       <div style="margin-left: 15px; margin-bottom: 10px;">
         <p style="font-size:20px;"><strong>Agent ${idx + 1}:</strong> ${agentName}</p>
-        <p><strong>Bought at:</strong> ₹${bnToNumber(agentData[1])}</p>
+        <p><strong>Bought at:</strong> ₹${bnToNumber(agentData[1])}/kg</p>
         <p><strong>Date:</strong> ${agentData[2]}</p>
       </div>
     `;
