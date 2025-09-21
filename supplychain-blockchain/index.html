@@ -1,93 +1,87 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>SupplyChain DApp — Round1</title>
+  <title>Agriculture SupplyChain DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin:auto; }
-    input, select { padding:8px; margin:6px 0; width:100%; box-sizing:border-box }
-    button { padding:10px 16px; margin:6px 0; }
-    pre { background:#f5f5f5; padding:10px; }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    .card { background: white; border-radius: 8px; padding: 15px; margin: 15px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    input, select { margin: 5px 0; padding: 8px; width: 95%; }
+    button { padding: 10px 15px; margin-top: 10px; cursor: pointer; }
+    .history { background: #fafafa; border: 1px solid #ccc; border-radius: 6px; padding: 10px; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>SupplyChain DApp (Round 1)</h1>
-  <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-	<div id="account" style="margin:8px 0; color:#333;"></div>
-
-  <label>Role:
-    <select id="role">
-      <option>Farmer</option>
-      <option>Distributor</option>
-      <option>Retailer</option>
-      <option>Consumer</option>
-    </select>
-  </label>
-
-  <h3>Batch Actions</h3>
-  <input id="batchID" placeholder="Batch ID (e.g. BATCH1001)" />
-  <input id="produce" placeholder="Produce name (e.g. Tomatoes)" />
-  <input id="origin" placeholder="Origin (farm / location)" />
-  <button id="createBtn">Create Batch (Farmer)</button>
-
-  <hr>
-
-  <input id="newOwner" placeholder="New owner address (for transfer)" />
-  <button id="transferBtn">Transfer Batch</button>
-
-  <hr>
-
-  <button id="historyBtn">Get Batch History (Consumer)</button>
-  <pre id="output">Output will appear here</pre>
-
-  <h4>QR (Batch ID)</h4>
-  <img id="qr" alt="QR code" style="width:140px;height:140px;border:1px solid #ddd"/>
-
-  <!-- Load Ethers.js -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
-  <!-- QR generator -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <div id="app">
+    <button id="connectBtn">Connect Wallet</button>
+    <div id="status"></div>
+  </div>
 
   <script>
-  // ====== PASTE YOUR CONTRACT INFO HERE ======
-  const CONTRACT_ADDRESS = "0xff5075de09b4ea6ee156e0cbfb6fe88cecc46594";
-  const CONTRACT_ABI =[
+    const CONTRACT_ADDRESS = "0x2c85217511fe8eeb126e9eeb19853545a608f65b";
+    const CONTRACT_ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "crop",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "harvestDate",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			}
+		],
+		"name": "addProduce",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"anonymous": false,
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "string",
-				"name": "batchID",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "produceName",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "origin",
-				"type": "string"
-			},
-			{
-				"indexed": true,
 				"internalType": "address",
-				"name": "owner",
+				"name": "participant",
 				"type": "address"
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
+				"internalType": "enum SupplyChain.Role",
+				"name": "role",
+				"type": "uint8"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
 			}
 		],
-		"name": "BatchCreated",
+		"name": "ParticipantRegistered",
 		"type": "event"
 	},
 	{
@@ -95,18 +89,55 @@
 		"inputs": [
 			{
 				"indexed": true,
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
 				"internalType": "string",
-				"name": "batchID",
+				"name": "crop",
 				"type": "string"
 			},
 			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "farmer",
+				"type": "address"
+			}
+		],
+		"name": "ProduceAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
 				"indexed": true,
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
 				"internalType": "address",
 				"name": "from",
 				"type": "address"
 			},
 			{
-				"indexed": true,
+				"indexed": false,
 				"internalType": "address",
 				"name": "to",
 				"type": "address"
@@ -114,32 +145,33 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "timestamp",
+				"name": "price",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "date",
+				"type": "string"
 			}
 		],
-		"name": "BatchTransferred",
+		"name": "ProduceTransferred",
 		"type": "event"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "batchID",
+				"name": "name",
 				"type": "string"
 			},
 			{
 				"internalType": "string",
-				"name": "produceName",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "origin",
+				"name": "location",
 				"type": "string"
 			}
 		],
-		"name": "createBatch",
+		"name": "registerFarmer",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -148,16 +180,49 @@
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "batchID",
+				"name": "name",
 				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "role",
+				"type": "uint256"
+			}
+		],
+		"name": "registerParticipant",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
 			},
 			{
 				"internalType": "address",
 				"name": "newOwner",
 				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "soldPrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "date",
+				"type": "string"
 			}
 		],
-		"name": "transferBatch",
+		"name": "transferProduce",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -165,131 +230,444 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "batchID",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
 			}
 		],
-		"name": "getHistory",
+		"name": "getProduce",
 		"outputs": [
 			{
-				"internalType": "string",
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "produceId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "crop",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "harvestDate",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "quantity",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "quality",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "currentOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "boughtPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "farmerName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "farmLocation",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "harvestDateOrigin",
+						"type": "string"
+					}
+				],
+				"internalType": "struct SupplyChain.Produce",
 				"name": "",
-				"type": "string"
-			},
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
 			{
-				"internalType": "string",
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			}
+		],
+		"name": "getProduceHistory",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "enum SupplyChain.Role",
+						"name": "role",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "location",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "boughtPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "soldPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "date",
+						"type": "string"
+					}
+				],
+				"internalType": "struct SupplyChain.Transaction[]",
 				"name": "",
-				"type": "string"
-			},
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
 			{
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"name": "participants",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
 			},
 			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
 			},
 			{
-				"internalType": "uint256[]",
+				"internalType": "enum SupplyChain.Role",
+				"name": "role",
+				"type": "uint8"
+			},
+			{
+				"internalType": "bool",
+				"name": "isRegistered",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint256[]"
+				"type": "uint256"
+			}
+		],
+		"name": "produces",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "crop",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "harvestDate",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "boughtPrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "farmerName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "farmLocation",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "harvestDateOrigin",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	}
 ];
-  // ===========================================
 
-  let provider, signer, contract, account;
+    let provider, signer, contract, account, userRole;
 
-  async function connectWallet() {
-    if (!window.ethereum) return alert("Please install MetaMask first: https://metamask.io");
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = provider.getSigner();
-    account = await signer.getAddress();
-    document.getElementById("account").innerText = "Connected: " + account;
-    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-  }
+    // ---- Wallet Connect ----
+    async function connectWallet() {
+      if (!window.ethereum) return alert("Install MetaMask!");
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      account = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-  document.getElementById("connectBtn").onclick = connectWallet;
-
-  document.getElementById("createBtn").onclick = async () => {
-    if (!contract) return alert("Connect wallet first");
-    const id = document.getElementById("batchID").value.trim();
-    const produce = document.getElementById("produce").value.trim();
-    const origin = document.getElementById("origin").value.trim() || "Unknown";
-    if (!id || !produce) return alert("Enter Batch ID and Produce name");
-    try {
-      const tx = await contract.createBatch(id, produce, origin);
-      await tx.wait();
-      alert("Batch created on-chain!");
-      await showHistoryAndQR(id);
-    } catch (err) {
-      console.error(err);
-      alert(err?.error?.message || err.message);
+      document.getElementById("status").innerText = "Connected: " + account;
+      checkRegistration();
     }
-  };
 
-  document.getElementById("transferBtn").onclick = async () => {
-    if (!contract) return alert("Connect wallet first");
-    const id = document.getElementById("batchID").value.trim();
-    const newOwner = document.getElementById("newOwner").value.trim();
-    if (!id || !newOwner) return alert("Enter Batch ID and new owner address");
-    
-	if (!ethers.utils.isAddress(newOwner)) {
-    return alert("Please enter a valid Ethereum address (starts with 0x...)");
-	}
-	try {
-      const tx = await contract.transferBatch(id, newOwner);
-      await tx.wait();
-      alert("Transfer successful");
-      await showHistoryAndQR(id);
-    } catch (err) {
-      console.error(err);
-      alert(err?.error?.message || err.message);
+    // ---- Check registration ----
+    async function checkRegistration() {
+      try {
+        const participant = await contract.participants(account);
+        if (participant.name && participant.name !== "") {
+          userRole = Number(participant.role);
+          loadDashboard();
+        } else {
+          showRegistrationForm();
+        }
+      } catch (err) {
+        console.error(err);
+        showRegistrationForm();
+      }
     }
-  };
 
-  document.getElementById("historyBtn").onclick = async () => {
-    const id = document.getElementById("batchID").value.trim();
-    if (!id) return alert("Enter Batch ID");
-    await showHistoryAndQR(id);
-  };
+    // ---- Registration Form ----
+    function showRegistrationForm() {
+      document.getElementById("app").innerHTML = `
+        <h3>Register</h3>
+        <label>Role: 
+          <select id="role">
+            <option value="1">Farmer</option>
+            <option value="2">Agent</option>
+          </select>
+        </label><br>
+        <input id="name" placeholder="Enter name"/><br>
+        <input id="location" placeholder="Enter location"/><br>
+        <button onclick="register()">Register</button>
+      `;
+    }
 
-  async function showHistoryAndQR(id) {
-    try {
-      const data = await contract.getHistory(id);
-      // data: [produceName, origin, currentOwner, previousOwners[], timestamps[]]
-      const produce = data[0];
-      const origin = data[1];
-      const currentOwner = data[2];
-      const prevOwners = data[3] || [];
-      const timestamps = data[4] || [];
-      const readableTimes = timestamps.map(t => {
-        try { return new Date(t.toNumber()*1000).toLocaleString(); } catch(e){ return String(t); }
+    async function register() {
+      const role = document.getElementById("role").value;
+      const name = document.getElementById("name").value;
+      const location = document.getElementById("location").value;
+
+      let tx;
+      if (role == 1) {
+        tx = await contract.registerFarmer(name, location);
+      } else {
+        tx = await contract.registerParticipant(name, location, role);
+      }
+      await tx.wait();
+      alert("Registration successful!");
+      userRole = role;
+      loadDashboard();
+    }
+
+    // ---- Dashboards ----
+    function loadDashboard() {
+      if (userRole == 1) {
+        showFarmerDashboard();
+      } else {
+        showAgentDashboard();
+      }
+    }
+
+    function showFarmerDashboard() {
+      document.getElementById("app").innerHTML = `
+        <h2>Farmer Dashboard</h2>
+        <div class="card">
+          <h3>Add Produce</h3>
+		  <input id="produceId" placeholder="Produce ID"><br>
+          <input id="crop" placeholder="Crop / Produce Type"><br>
+          <input id="harvestDate" placeholder="Harvest Date"><br>
+          <input id="quantity" placeholder="Quantity"><br>
+          <input id="quality" placeholder="Quality"><br>
+          <button onclick="addProduce()">Add Produce</button>
+        </div>
+        <div class="card">
+          <h3>Transfer Produce</h3>
+          <input id="produceId" placeholder="Produce ID"><br>
+          <input id="newOwner" placeholder="New Owner Address"><br>
+          <input id="soldPrice" placeholder="Sold Price"><br>
+          <input id="date" placeholder="Date"><br>
+          <button onclick="transferProduce()">Transfer</button>
+        </div>
+        ${sharedHistorySection()}
+      `;
+    }
+
+    function showAgentDashboard() {
+      document.getElementById("app").innerHTML = `
+        <h2>Agent Dashboard</h2>
+        <div class="card">
+          <h3>Transfer Produce</h3>
+          <input id="produceId" placeholder="Produce ID"><br>
+          <input id="newOwner" placeholder="New Owner Address"><br>
+          <input id="soldPrice" placeholder="Sold Price"><br>
+          <input id="date" placeholder="Date"><br>
+          <button onclick="transferProduce()">Transfer</button>
+        </div>
+        ${sharedHistorySection()}
+      `;
+    }
+
+    function sharedHistorySection() {
+      return `
+        <div class="card">
+          <h3>History & Scanner</h3>
+          <input id="historyProduceId" placeholder="Produce ID"><br>
+          <button onclick="viewHistory()">View History</button>
+          <div id="history"></div>
+        </div>
+      `;
+    }
+
+    // ---- Farmer Actions ----
+    async function addProduce() {
+      const crop = document.getElementById("crop").value;
+      const harvestDate = document.getElementById("harvestDate").value;
+      const quantity = document.getElementById("quantity").value;
+      const quality = document.getElementById("quality").value;
+
+      const produceId = parseInt(document.getElementById("produceId").value);
+	  const qty = parseInt(quantity);
+
+	  if (isNaN(produceId) || isNaN(qty)) {
+	  alert("Produce ID and Quantity must be valid numbers");
+	  return;
+	  }
+
+	  const tx = await contract.addProduce(produceId, crop, harvestDate, qty, quality);
+
+      await tx.wait();
+      alert("Produce added successfully!");
+    }
+
+    // ---- Common Action ----
+    async function transferProduce() {
+      const produceId = document.getElementById("produceId").value;
+      const newOwner = document.getElementById("newOwner").value;
+      const soldPrice = document.getElementById("soldPrice").value;
+      const date = document.getElementById("date").value;
+
+      const produceId = parseInt(document.getElementById("produceId").value);
+		if (isNaN(produceId)) {
+		alert("Please enter a valid Produce ID");
+		return;
+		}
+
+		try {
+		const produce = await contract.getProduce(produceId);
+		if (!produce || produce.produceId == 0) {
+			alert("Produce does not exist. Please add it first.");
+			return;
+		}
+		} catch(err) {
+		alert("Produce does not exist or error fetching produce.");
+		return;
+		}
+
+const newOwner = document.getElementById("newOwner").value;
+const soldPrice = parseInt(document.getElementById("soldPrice").value);
+const date = document.getElementById("date").value;
+
+if (isNaN(soldPrice)) {
+  alert("Sold Price must be a valid number");
+  return;
+}
+
+const tx = await contract.transferProduce(produceId, newOwner, soldPrice, date);
+await tx.wait();
+alert("Produce transferred successfully!");
+
+    }
+
+    // ---- History ----
+    async function viewHistory() {
+      const produceId = document.getElementById("historyProduceId").value;
+      const produce = await contract.getProduce(produceId);
+
+      let html = `
+        <div class="history">
+          <h4>Produce ID: ${produceId}</h4>
+          <p><b>Crop:</b> ${produce.crop}</p>
+          <p><b>Quantity:</b> ${produce.quantity}</p>
+          <p><b>Quality:</b> ${produce.quality}</p>
+          <h4>Origin:</h4>
+          <p><b>Farmer:</b> ${produce.farmerName}</p>
+          <p><b>Farm Location:</b> ${produce.farmLocation}</p>
+          <p><b>Harvest Date:</b> ${produce.harvestDate}</p>
+          <h4>Supply Chain:</h4>
+      `;
+
+      const txns = await contract.getProduceHistory(produceId);
+      txns.forEach((tx, i) => {
+        html += `
+          <div>
+            ${i+1}. ${tx.role}: ${tx.name}<br>
+            Location: ${tx.location}<br>
+            Bought at: ${tx.boughtPrice}<br>
+            Sold at: ${tx.soldPrice}<br>
+            Date: ${tx.date}<br>
+          </div><br>
+        `;
       });
 
-      const out = {
-        batchID: id,
-        produce,
-        origin,
-        currentOwner,
-        previousOwners: prevOwners,
-        timestamps: readableTimes
-      };
-
-      document.getElementById("output").innerText = JSON.stringify(out, null, 2);
-      QRCode.toDataURL(id).then(url => document.getElementById("qr").src = url);
-    } catch (err) {
-      console.error(err);
-      alert(err?.error?.message || err.message);
+      html += "</div>";
+      document.getElementById("history").innerHTML = html;
     }
-  }
+
+    document.getElementById("connectBtn").onclick = connectWallet;
   </script>
 </body>
 </html>
