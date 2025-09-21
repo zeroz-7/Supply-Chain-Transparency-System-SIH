@@ -518,8 +518,23 @@ document.getElementById("agentCheckProduceBtn").onclick = async () => {
 document.querySelector(".getQR").onclick =  () => {
   const produceId = document.getElementById("checkProduceId").value;
   const container = document.getElementById("canvas");
-	const url = `https//:github.io/qr.html?id=${produceId}`
-	console.log(QRCode)
+	const url = `https://goooble.github.io/sih-SCM/qr.html?id=${produceId}`
+	console.log(url)
+QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
+        if (err) {
+          console.error(err);
+          alert("Error generating QR code.");
+          return;
+        }
+        container.appendChild(canvas);
+      });
+};
+
+document.querySelector(".agentGetQR").onclick =  () => {
+  const produceId = document.getElementById("agentCheckProduceId").value;
+  const container = document.getElementById("agentCanvas");
+	const url = `https://goooble.github.io/sih-SCM/qr.html?id=${produceId}`
+	console.log(url)
 QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
         if (err) {
           console.error(err);
