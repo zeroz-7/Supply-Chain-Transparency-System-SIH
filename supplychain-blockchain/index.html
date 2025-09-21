@@ -25,39 +25,45 @@
 <div id="farmerDashboard" class="dashboard">
     <h2>Farmer Dashboard</h2>
     <h3>Add Produce</h3>
-    <input placeholder="Produce ID" id="produceId">
-    <input placeholder="Crop" id="crop">
-    <input placeholder="Quantity" id="quantity" type="number">
-    <input placeholder="Quality" id="quality">
-    <input placeholder="Date" id="date">
-    <button id="addProduceBtn">Add Produce</button>
+    <div class="addproduce">
+		<input placeholder="Produce ID" id="produceId">
+		<input placeholder="Crop" id="crop">
+		<input placeholder="Quantity" id="quantity" type="number">
+		<input placeholder="Quality" id="quality">
+		<input placeholder="Date" id="date">
+		<button id="addProduceBtn">Add Produce</button>
+	</div>
 
     <h3>Transfer Produce</h3>
-    <input placeholder="Produce ID" id="transferProduceId">
-    <input placeholder="New Owner Address" id="newOwner">
-    <input placeholder="Sold Price" id="soldPrice" type="number">
-    <input placeholder="Date" id="transferDate">
-    <button id="transferProduceBtn">Transfer Produce</button>
+    <div class="transfer">
+		<input placeholder="Produce ID" id="transferProduceId">
+		<input placeholder="New Owner Address" id="newOwner">
+		<input placeholder="Sold Price" id="soldPrice" type="number">
+		<input placeholder="Date" id="transferDate">
+		<button id="transferProduceBtn">Transfer Produce</button>
+	</div>
 
     <h3>Check Produce</h3>
     <input placeholder="Produce ID" id="checkProduceId">
     <button id="checkProduceBtn">Get Produce</button>
-    <pre id="produceOutput"></pre>
+    <div id="checkProduceDisplay"></div>
 </div>
 
 <div id="agentDashboard" class="dashboard">
     <h2>Agent Dashboard</h2>
     <h3>Transfer Produce</h3>
-    <input placeholder="Produce ID" id="agentTransferProduceId">
-    <input placeholder="New Owner Address" id="agentNewOwner">
-    <input placeholder="Sold Price" id="agentSoldPrice" type="number">
-    <input placeholder="Date" id="agentTransferDate">
-    <button id="agentTransferProduceBtn">Transfer Produce</button>
+    <div class="transfer">
+		<input placeholder="Produce ID" id="agentTransferProduceId">
+		<input placeholder="New Owner Address" id="agentNewOwner">
+		<input placeholder="Sold Price" id="agentSoldPrice" type="number">
+		<input placeholder="Date" id="agentTransferDate">
+		<button id="agentTransferProduceBtn">Transfer Produce</button>
+	</div>
 
     <h3>Check Produce</h3>
     <input placeholder="Produce ID" value="1" id="agentCheckProduceId">
     <button id="agentCheckProduceBtn">Get Produce</button>
-    <duv id="produceDisplay"></div>
+    <div id="agentProduceDisplay"></div>
 </div>
 
 <script src="script.js"></script>
