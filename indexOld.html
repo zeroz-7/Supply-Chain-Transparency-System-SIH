@@ -1,0 +1,619 @@
+<!doctype html>
+<html>
+<head>
+  <title>Agriculture SupplyChain DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    .card { background: white; border-radius: 8px; padding: 15px; margin: 15px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    input, select { margin: 5px 0; padding: 8px; width: 95%; }
+    button { padding: 10px 15px; margin-top: 10px; cursor: pointer; }
+    .history { background: #fafafa; border: 1px solid #ccc; border-radius: 6px; padding: 10px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <button id="connectBtn">Connect Wallet</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const CONTRACT_ADDRESS = "0xcCeD24c53583094aA92D924f9e2128252cd6287a";
+    const CONTRACT_ABI = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "crop",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "ProduceAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "ProduceTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "enum AgriSupplyChain.Role",
+				"name": "role",
+				"type": "uint8"
+			}
+		],
+		"name": "Registered",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "crop",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "date",
+				"type": "string"
+			}
+		],
+		"name": "addProduce",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "agents",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "farmers",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "farmLocation",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			}
+		],
+		"name": "getProduce",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "currentOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "produceId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "crop",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "quantity",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "quality",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "date",
+						"type": "string"
+					},
+					{
+						"components": [
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "farmLocation",
+								"type": "string"
+							}
+						],
+						"internalType": "struct AgriSupplyChain.Farmer",
+						"name": "origin",
+						"type": "tuple"
+					},
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "newOwner",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "soldPrice",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "date",
+								"type": "string"
+							}
+						],
+						"internalType": "struct AgriSupplyChain.Transaction[]",
+						"name": "supplyChain",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct AgriSupplyChain.Produce",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "produces",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "crop",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "quality",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "date",
+				"type": "string"
+			},
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "farmLocation",
+						"type": "string"
+					}
+				],
+				"internalType": "struct AgriSupplyChain.Farmer",
+				"name": "origin",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "location",
+				"type": "string"
+			}
+		],
+		"name": "registerAgent",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "farmLocation",
+				"type": "string"
+			}
+		],
+		"name": "registerFarmer",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "roles",
+		"outputs": [
+			{
+				"internalType": "enum AgriSupplyChain.Role",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "produceId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "newOwnerAdd",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "soldPrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "date",
+				"type": "string"
+			}
+		],
+		"name": "transferProduce",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+];
+
+    let provider, signer, contract, account, userRole;
+
+    // ---- Wallet Connect ----
+    async function connectWallet() {
+      if (!window.ethereum) return alert("Install MetaMask!");
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      account = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+      document.getElementById("status").innerText = "Connected: " + account;
+      checkRegistration();
+    }
+
+    // ---- Check registration ----
+    async function checkRegistration() {
+      try {
+        const participant = await contract.agents(account);
+        if (participant.name && participant.name !== "") {
+          userRole = Number(participant.role);
+          loadDashboard();
+        } else {
+          showRegistrationForm();
+        }
+      } catch (err) {
+        console.error(err);
+        showRegistrationForm();
+      }
+    }
+
+    // ---- Registration Form ----
+    function showRegistrationForm() {
+      document.getElementById("app").innerHTML = `
+        <h3>Register</h3>
+        <label>Role: 
+          <select id="role">
+            <option value="1">Farmer</option>
+            <option value="2">Agent</option>
+          </select>
+        </label><br>
+        <input id="name" placeholder="Enter name"/><br>
+        <input id="location" placeholder="Enter location"/><br>
+        <button onclick="register()">Register</button>
+      `;
+    }
+
+    async function register() {
+      const role = document.getElementById("role").value;
+      const name = document.getElementById("name").value;
+      const location = document.getElementById("location").value;
+
+      let tx;
+      if (role == 1) {
+        tx = await contract.registerFarmer(name, location);
+      } else {
+        tx = await contract.registerParticipant(name, location, role);
+      }
+      await tx.wait();
+      alert("Registration successful!");
+      userRole = role;
+      loadDashboard();
+    }
+
+    // ---- Dashboards ----
+    function loadDashboard() {
+      if (userRole == 1) {
+        showFarmerDashboard();
+      } else {
+        showAgentDashboard();
+      }
+    }
+
+    function showFarmerDashboard() {
+      document.getElementById("app").innerHTML = `
+        <h2>Farmer Dashboard</h2>
+        <div class="card">
+          <h3>Add Produce</h3>
+		  <input id="produceId" placeholder="Produce ID"><br>
+          <input id="crop" placeholder="Crop / Produce Type"><br>
+          <input id="harvestDate" placeholder="Harvest Date"><br>
+          <input id="quantity" placeholder="Quantity"><br>
+          <input id="quality" placeholder="Quality"><br>
+          <button onclick="addProduce()">Add Produce</button>
+        </div>
+        <div class="card">
+          <h3>Transfer Produce</h3>
+          <input id="produceId" placeholder="Produce ID"><br>
+          <input id="newOwner" placeholder="New Owner Address"><br>
+          <input id="soldPrice" placeholder="Sold Price"><br>
+          <input id="date" placeholder="Date"><br>
+          <button onclick="transferProduce()">Transfer</button>
+        </div>
+        ${sharedHistorySection()}
+      `;
+    }
+
+    function showAgentDashboard() {
+      document.getElementById("app").innerHTML = `
+        <h2>Agent Dashboard</h2>
+        <div class="card">
+          <h3>Transfer Produce</h3>
+          <input id="produceId" placeholder="Produce ID"><br>
+          <input id="newOwner" placeholder="New Owner Address"><br>
+          <input id="soldPrice" placeholder="Sold Price"><br>
+          <input id="date" placeholder="Date"><br>
+          <button onclick="transferProduce()">Transfer</button>
+        </div>
+        ${sharedHistorySection()}
+      `;
+    }
+
+    function sharedHistorySection() {
+      return `
+        <div class="card">
+          <h3>History & Scanner</h3>
+          <input id="historyProduceId" placeholder="Produce ID"><br>
+          <button onclick="viewHistory()">View History</button>
+          <div id="history"></div>
+        </div>
+      `;
+    }
+
+    // ---- Farmer Actions ----
+    async function addProduce() {
+      const crop = document.getElementById("crop").value;
+      const harvestDate = document.getElementById("harvestDate").value;
+      const quantity = document.getElementById("quantity").value;
+      const quality = document.getElementById("quality").value;
+
+      const produceId = parseInt(document.getElementById("produceId").value);
+	  const qty = parseInt(quantity);
+
+	  if (isNaN(produceId) || isNaN(qty)) {
+	  alert("Produce ID and Quantity must be valid numbers");
+	  return;
+	  }
+
+	  const tx = await contract.addProduce(produceId, crop, harvestDate, qty, quality);
+
+      await tx.wait();
+      alert("Produce added successfully!");
+    }
+
+    // ---- Common Action ----
+    async function transferProduce() {
+      const newOwner = document.getElementById("newOwner").value;
+      const soldPrice = document.getElementById("soldPrice").value;
+      const date = document.getElementById("date").value;
+
+    produceId = parseInt(document.getElementById("produceId").value);
+		if (isNaN(produceId)) {
+		alert("Please enter a valid Produce ID");
+		return;
+		}
+
+		try {
+		const produce = await contract.getProduce(produceId);
+		if (!produce || produce.produceId == 0) {
+			alert("Produce does not exist. Please add it first.");
+			return;
+		}
+		} catch(err) {
+		alert("Produce does not exist or error fetching produce.");
+		return;
+		}
+
+if (isNaN(soldPrice)) {
+  alert("Sold Price must be a valid number");
+  return;
+}
+
+const tx = await contract.transferProduce(produceId, newOwner, soldPrice, date);
+await tx.wait();
+alert("Produce transferred successfully!");
+
+    }
+
+    // ---- History ----
+    async function viewHistory() {
+      const produceId = document.getElementById("historyProduceId").value;
+      const produce = await contract.getProduce(produceId);
+
+      let html = `
+        <div class="history">
+          <h4>Produce ID: ${produceId}</h4>
+          <p><b>Crop:</b> ${produce.crop}</p>
+          <p><b>Quantity:</b> ${produce.quantity}</p>
+          <p><b>Quality:</b> ${produce.quality}</p>
+          <h4>Origin:</h4>
+          <p><b>Farmer:</b> ${produce.farmerName}</p>
+          <p><b>Farm Location:</b> ${produce.farmLocation}</p>
+          <p><b>Harvest Date:</b> ${produce.harvestDate}</p>
+          <h4>Supply Chain:</h4>
+      `;
+
+      const txns = await contract.getProduceHistory(produceId);
+      txns.forEach((tx, i) => {
+        html += `
+          <div>
+            ${i+1}. ${tx.role}: ${tx.name}<br>
+            Location: ${tx.location}<br>
+            Bought at: ${tx.boughtPrice}<br>
+            Sold at: ${tx.soldPrice}<br>
+            Date: ${tx.date}<br>
+          </div><br>
+        `;
+      });
+
+      html += "</div>";
+      document.getElementById("history").innerHTML = html;
+    }
+
+    document.getElementById("connectBtn").onclick = connectWallet;
+  </script>
+</body>
+</html>
