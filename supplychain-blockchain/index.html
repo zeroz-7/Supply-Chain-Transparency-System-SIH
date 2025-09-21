@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Agri Supply Chain DApp</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>;
 <link rel="stylesheet" href="style.css">
 
 <style>
@@ -46,6 +47,8 @@
     <h3>Check Produce</h3>
     <input placeholder="Produce ID" id="checkProduceId">
     <button id="checkProduceBtn">Get Produce</button>
+	<button class="getQR">Get QR Code</button>
+	<div id="canvas"></div>
     <div id="checkProduceDisplay"></div>
 </div>
 
