@@ -518,7 +518,7 @@ document.getElementById("agentCheckProduceBtn").onclick = async () => {
 document.querySelector(".getQR").onclick =  () => {
   const produceId = document.getElementById("checkProduceId").value;
   const container = document.getElementById("canvas");
-	const url = `google.com`
+	const url = `https://goooble.github.io/sih-SCM/qr.html?id=${produceId}`
 	console.log(url)
 QRCode.toCanvas(url, { width: 200 }, function (err, canvas) {
         if (err) {
