@@ -1,41 +1,154 @@
-# Supply-Chain-Transparency-System-SIH
-This is a repository chronicling all work on the Blockchain-based Supply Chain Transparency System for Agricultural Produce developed for Smart India Hackathon 2025
+# 🌾 Supply Chain Transparency System (Blockchain-Based)
 
-Remix - https://remix.ethereum.org/#lang=en&optimize=false&runs=200&evmVersion=null
+A decentralized application (DApp) designed to enhance **transparency, traceability, and trust** in agricultural supply chains.
+Developed as part of **Smart India Hackathon (SIH) 2025**.
 
-MetaMask - https://chromewebstore.google.com/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en
+---
 
-Ethereum Sepolia Faucet - https://cloud.google.com/application/web3/faucet/ethereum/sepolia
+## 🚀 Overview
 
-Remix IDE (online) → Write & deploy smart contracts in Solidity (no setup needed).
+This project leverages blockchain technology to track agricultural produce across every stage of the supply chain — from farmers to end consumers.
 
-MetaMask wallet → Acts like your notebook identity. It stores test coins and signs transactions.
+By storing immutable transaction records on-chain, the system ensures:
 
-# Go to Deploy & Run Transactions tab → Environment: JavaScript VM.
-Click Deploy. The contract appears under Deployed Contracts.
+* 🔍 Full traceability of produce batches
+* 🔐 Tamper-proof data storage
+* 🤝 Increased trust among stakeholders
 
-Use the UI buttons that Remix generates to call createBatch, transferBatch, getHistory and verify returned values.
+---
 
-# In MetaMask, switch to the desired testnet:
-Sepolia or Polygon Mumbai are common choices.
+## 🛠️ Tech Stack
 
-# Get test tokens (faucet)
-Copy your MetaMask account address (Account → click address).
+* **Blockchain Platform:** Ethereum (Testnets: Sepolia)
+* **Smart Contracts:** Solidity
+* **Development Environment:** Remix IDE
+* **Wallet Integration:** MetaMask
+* **Test Tokens:** Sepolia ETH 
 
-Search for “[Sepolia faucet]” or “[Mumbai faucet]” in your browser, open a faucet site, paste your address and request test ETH or MATIC.
+---
 
-# Deploy via Remix + MetaMask
-In Remix → Deploy & Run Transactions → Environment: Injected Web3 (this connects Remix to MetaMask).
+## ⚙️ Features
 
-Select your account (MetaMask will prompt connection).
+* 📦 Create and track agricultural batches (`createBatch`)
+* 🔄 Transfer ownership across supply chain (`transferBatch`)
+* 📜 Retrieve complete batch history (`getHistory`)
+* ✅ Verify authenticity and origin of produce
 
-Make sure MetaMask is set to the same testnet (Sepolia/Mumbai).
+---
 
-Click Deploy — confirm the transaction in MetaMask.
+## 🧑‍💻 Getting Started
 
-After mining, copy the Deployed Contract Address (you’ll need it in frontend).
+### 1. Open Remix IDE
 
-In Solidity Compiler → click Compilation Details → copy the ABI (long JSON array). You will paste this into the frontend
+Access the online IDE:
+👉 https://remix.ethereum.org/
 
+---
 
+### 2. Write / Load Smart Contract
 
+* Create a new Solidity file
+* Paste or upload your contract code
+
+---
+
+### 3. Compile the Contract
+
+* Go to **Solidity Compiler** tab
+* Select appropriate compiler version
+* Click **Compile**
+
+---
+
+### 4. Deploy Smart Contract
+ Using MetaMask 
+
+1. Connect MetaMask:
+
+   * Install extension
+   * Create / import wallet
+
+2. Switch to Test Network:
+
+   * Sepolia or Polygon Mumbai
+
+3. Get Test Tokens:
+
+   * Copy wallet address
+   * Use faucet to request tokens
+
+4. Deploy Contract:
+
+   * In Remix → Environment: `Injected Web3`
+   * Connect MetaMask
+   * Click **Deploy** and confirm transaction
+
+---
+
+### 5. Interact with Contract
+
+After deployment:
+
+* Contract appears under **Deployed Contracts**
+* Use generated UI buttons to:
+
+  * `createBatch`
+  * `transferBatch`
+  * `getHistory`
+
+---
+
+### 6. Retrieve Contract Details
+
+* 📍 **Contract Address:** Copy after deployment
+* 📄 **ABI:**
+
+  * Go to Solidity Compiler → Compilation Details
+  * Copy the JSON ABI
+  * Use in frontend integration
+
+---
+
+## 📌 Workflow
+
+```text
+Farmer → Distributor → Retailer → Consumer
+   ↓           ↓            ↓            ↓
+Create      Transfer     Transfer     Verify
+Batch       Ownership    Ownership    Product
+```
+
+---
+
+## 🌟 Key Advantages
+
+* ✔ Eliminates data manipulation
+* ✔ Enables real-time tracking
+* ✔ Improves supply chain accountability
+* ✔ Enhances consumer trust
+
+---
+
+## 📈 Future Enhancements
+
+* 📱 Frontend dashboard for users
+* 📊 Analytics for supply chain insights
+* 🌐 Integration with IoT sensors (temperature, storage conditions)
+* 🔗 Multi-chain deployment
+
+---
+
+## 🔗 Useful Links
+
+* Remix IDE: https://remix.ethereum.org/
+* MetaMask: https://metamask.io/
+* Sepolia Faucet: https://cloud.google.com/application/web3/faucet/ethereum/sepolia
+
+---
+
+## 💡 Note
+
+This project is deployed on test networks for development and demonstration purposes only.
+Ensure proper security audits before deploying on mainnet.
+
+---
